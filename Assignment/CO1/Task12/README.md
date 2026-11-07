@@ -7,4 +7,4 @@ Compile:
 g++ -std=c++17 -Wall -Wextra t12.cpp -o t12
 ./t12
 ```
-Verify all test rows and capture your own compiler output and terminal screenshot.
+

@@ -1,0 +1,35 @@
+2. Pseudocode
+The SIMATS pseudocode standard was not supplied, so I used the usual form (named algorithm, INPUT/OUTPUT, BEGIN/END, indentation, <- for assignment). Re-check it against the standard before submission.
+ALGORITHM ComputeFare
+INPUT  : z (zone: Inner | Middle | Outer), peak (boolean)
+OUTPUT : fare in paise (integer)
+CONSTANTS: BASE_PAISE = [1000, 2000, 3000], PEAK_SURCHARGE_PERCENT = 20
+BEGIN
+    SWITCH z
+        CASE Inner  : base <- BASE_PAISE[0]
+        CASE Middle : base <- BASE_PAISE[1]
+        CASE Outer  : base <- BASE_PAISE[2]
+    END SWITCH
+    IF peak THEN
+        base <- base + base * PEAK_SURCHARGE_PERCENT / 100      // integer arithmetic
+            only
+    END IF
+    RETURN base
+END
+ 
+ALGORITHM CanTravel
+INPUT  : balance, fare (paise)
+OUTPUT : TRUE or FALSE
+BEGIN
+    RETURN (balance - fare) >= MIN_BALANCE_PAISE
+END
+ 
+ALGORITHM ProcessDay
+INPUT  : list of journeys, starting balance
+BEGIN
+    FOR EACH journey IN list
+        IF journey is invalid THEN CONTINUE
+        f <- ComputeFare(journey.zone, journey.peak)
+        IF CanTravel(balance, f) THEN balance <- balance - f
+        ELSE report "Denied"
+    END FOR

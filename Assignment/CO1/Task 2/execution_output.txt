@@ -1,0 +1,7 @@
+macro FARE_INNER*2 = 1500
+constexpr FARE_INNER_C*2 = 2000
+sizeof(Zone)=1 sizeof(OldZone)=4
+plain enum arithmetic compiles: 7
+OInner == 0 ? 1
+sizeof(FARE_INNER_C)=4
+Inner base fare (paise) = 1000

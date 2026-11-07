@@ -1,0 +1,6 @@
+t2_err.cpp: In function 'int main()':
+t2_err.cpp:2:28: error: cannot convert 'Zone' to 'int' in initialization
+    2 | int main() { int x = Zone::Outer; return x; }
+      |                      ~~~~~~^~~~~
+      |                            |
+      |                            Zone

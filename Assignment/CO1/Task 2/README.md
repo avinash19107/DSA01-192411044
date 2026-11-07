@@ -29,6 +29,3 @@ The second command is *expected to fail*, because `enum class` does not implicit
 
 ## Complexity
 Constant fare access and enum operations are O(1). Macros require no runtime storage; scalar `constexpr` constants typically do not require separate storage unless odr-used. The three-element `BASE_PAISE` array has constant space for this fixed design (24 bytes on this platform); generalized to z zones, its space is O(z).
-
-## Submission
-Upload these source and evidence files to `Assignment/CO1/Task02/`. Capture a screenshot of your own terminal execution if requested. Do **not** upload the master assignment DOCX into this task folder.

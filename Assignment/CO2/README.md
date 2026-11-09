@@ -19,19 +19,3 @@ Each task folder contains C++ source files, a short task README, and execution s
 ## Compiler
 
 The programs use standard C++17 and were compiled in Kali Linux with GNU g++ using `-std=c++17 -Wall -Wextra`. Benchmarks use the optimization flags stated in Task06 and Task07.
-
-## General build command
-
-```bash
-g++ -std=c++17 -Wall -Wextra source.cpp -o program
-./program
-```
-
-See each task README for exact commands and special compile-only demonstrations.
-
-## Evidence notes
-
-- `Task02/q2_dangling.cpp` is intentionally unsafe and must not be executed. Compile it only to capture the diagnostic.
-- `Task03/q3_ambiguity.cpp` is intentionally ambiguous and is expected to fail compilation.
-- Timing results are measurements from the recorded Kali Linux run and can vary with system load and hardware.
-- Screenshots are terminal evidence captured during the task executions.

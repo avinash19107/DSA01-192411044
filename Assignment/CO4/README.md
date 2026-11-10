@@ -18,6 +18,3 @@ GNU g++ using C++17.
 - Task04: Derived-class pointers, virtual dispatch, slicing and virtual destructor
 - Task05: The this pointer and method chaining
 - Task06: Abstract classes and pure virtual functions
-
-## Evidence
-Screenshots are the terminal captures supplied during practical execution. The Q2 ambiguity example and Q3 initializer-order warning are intentional compiler-diagnostic demonstrations.

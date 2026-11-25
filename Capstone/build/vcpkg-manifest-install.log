@@ -1,0 +1,22 @@
+Detecting compiler hash for triplet x64-windows...
+Compiler found: C:/Program Files (x86)/Microsoft Visual Studio/18/BuildTools/VC/Tools/MSVC/14.52.37025/bin/Hostx64/x64/cl.exe
+The following packages are already installed:
+  * asio:x64-windows@1.38.2
+    crow:x64-windows@1.3.5
+    openssl:x64-windows@3.6.5#2
+  * vcpkg-cmake:x64-windows@2026-11-09
+  * vcpkg-cmake-config:x64-windows@2026-07-21
+  * vcpkg-cmake-get-vars:x64-windows@2025-05-29
+crow provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(Crow CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Crow::Crow)
+
+openssl is compatible with built-in CMake targets:
+
+  find_package(OpenSSL REQUIRED)
+  target_link_libraries(main PRIVATE OpenSSL::SSL)
+  target_link_libraries(main PRIVATE OpenSSL::Crypto)
+
+All requested installations completed successfully in: 558 us

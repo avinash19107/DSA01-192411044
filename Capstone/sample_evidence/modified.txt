@@ -1,0 +1,3 @@
+Employee: Ravi
+Salary: 45000
+Status: Approved

@@ -1,0 +1,5 @@
+{
+  "name": "forensix-cpp",
+  "version-string": "1.0.0",
+  "dependencies": ["crow", "openssl"]
+}

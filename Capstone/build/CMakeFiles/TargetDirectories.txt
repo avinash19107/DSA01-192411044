@@ -1,0 +1,3 @@
+C:/Users/Lenovo 14/Downloads/FORENSIX_Monitoring/build/CMakeFiles/forensix.dir
+C:/Users/Lenovo 14/Downloads/FORENSIX_Monitoring/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Lenovo 14/Downloads/FORENSIX_Monitoring/build/CMakeFiles/ZERO_CHECK.dir

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Lenovo 14\Downloads\FORENSIX_Monitoring\build\CMakeFiles\a9e90c311385ac19e7f40abf6070c197\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{EBC234A4-AB67-3926-B8E0-2E0F38F49CF8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

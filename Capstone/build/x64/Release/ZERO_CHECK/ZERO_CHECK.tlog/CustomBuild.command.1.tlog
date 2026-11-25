@@ -1,0 +1,10 @@
+^C:\USERS\LENOVO 14\DOWNLOADS\FORENSIX_MONITORING\BUILD\CMAKEFILES\A9E90C311385AC19E7F40ABF6070C197\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/Lenovo 14/Downloads/FORENSIX_Monitoring" "-BC:/Users/Lenovo 14/Downloads/FORENSIX_Monitoring/build" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "C:/Users/Lenovo 14/Downloads/FORENSIX_Monitoring/build/FORENSIX_CPP.slnx"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

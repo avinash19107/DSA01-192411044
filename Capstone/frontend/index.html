@@ -1,0 +1,1287 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>FORENSIX | Live File Integrity Monitoring</title>
+
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0b1220;
+            --panel: #152036;
+            --line: #30415c;
+            --text: #e7edf8;
+            --muted: #a8b8d0;
+            --blue: #64c4ff;
+            --red: #ff9da5;
+            --green: #77e2b5;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 15px/1.5 system-ui, Segoe UI, Arial;
+        }
+
+        header {
+            padding: 22px max(20px, calc((100vw - 1200px)/2));
+            background: #101b2d;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        h2 {
+            margin: 0 0 12px;
+            font-size: 19px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .btn {
+            background: var(--blue);
+            color: #082037;
+            border: 0;
+            border-radius: 7px;
+            padding: 9px 13px;
+            cursor: pointer;
+            font-weight: 700;
+            margin: 3px;
+        }
+
+        .btn.secondary {
+            background: #2b415e;
+            color: var(--text);
+        }
+
+        .btn:disabled {
+            opacity: .5;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .stat {
+            background: #1c2b44;
+            padding: 14px;
+            border-radius: 9px;
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 27px;
+        }
+
+        .stat span {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            padding: 10px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--muted);
+        }
+
+        .scroll {
+            overflow-x: auto;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 14px;
+            background: #244b3b;
+            color: var(--green);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge.tampered,
+        .badge.modified,
+        .badge.deleted,
+        .badge.missing {
+            background: #562c3a;
+            color: var(--red);
+        }
+
+        .badge.restored {
+            background: #244b3b;
+            color: var(--green);
+        }
+
+        .notice {
+            background: #23344f;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            overflow-wrap: anywhere;
+        }
+
+        .hash {
+            font: 12px Consolas, monospace;
+            color: var(--muted);
+            overflow-wrap: anywhere;
+        }
+
+        .change {
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            overflow: hidden;
+            margin: 14px 0;
+        }
+
+        .change header {
+            padding: 9px 12px;
+            background: #243653;
+        }
+
+        .pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .pair > div {
+            min-width: 0;
+        }
+
+        .pair label {
+            display: block;
+            background: #23344f;
+            padding: 7px 12px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        pre {
+            margin: 0;
+            padding: 14px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            font: 14px/1.5 Consolas, monospace;
+        }
+
+        .old {
+            background: #42222f;
+            color: #ffb6bc;
+        }
+
+        .new {
+            background: #153b36;
+            color: #b3ffe2;
+        }
+
+        .frame {
+            width: 100%;
+            height: 450px;
+            background: white;
+            border: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        input {
+            max-width: 100%;
+        }
+
+        @media(max-width: 800px) {
+
+            .grid, .pair {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            header {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ======================================
+     WEBSITE HEADER
+     ====================================== -->
+
+<header>
+    <div>
+        <h1>◈ FORENSIX</h1>
+
+        <div class="muted">
+            Live Evidence Integrity Monitoring
+        </div>
+    </div>
+
+    <div id="server" class="muted">
+        Connecting...
+    </div>
+</header>
+
+<main>
+
+    <!-- ======================================
+         LIVE MONITORING DASHBOARD
+         ====================================== -->
+
+    <section class="panel">
+
+        <h2>Live Monitoring</h2>
+
+        <div class="stats">
+
+            <div class="stat">
+                <strong id="total">0</strong>
+                <span>Evidence files</span>
+            </div>
+
+            <div class="stat">
+                <strong id="tampered">0</strong>
+                <span>Tampered</span>
+            </div>
+
+            <div class="stat">
+                <strong id="missing">0</strong>
+                <span>Missing</span>
+            </div>
+
+            <div class="stat">
+                <strong id="eventCount">0</strong>
+                <span>Recorded events</span>
+            </div>
+
+        </div>
+
+        <p>
+            <span id="monitorState" class="badge">
+                Checking...
+            </span>
+
+            <span class="muted">
+                Scans registered uploaded evidence every
+                2 seconds; dashboard refreshes every
+                3 seconds.
+            </span>
+        </p>
+
+        <button id="start" class="btn">
+            Start Monitoring
+        </button>
+
+        <button id="stop" class="btn secondary">
+            Stop Monitoring
+        </button>
+
+        <button id="refresh" class="btn secondary">
+            Refresh
+        </button>
+
+        <div id="notice" class="muted"></div>
+
+    </section>
+
+    <!-- ======================================
+         UPLOAD EVIDENCE
+         ====================================== -->
+
+    <section class="grid">
+
+        <div class="panel">
+
+            <h2>Upload Original Evidence</h2>
+
+            <p class="muted">
+                Maximum 25 MB. Original evidence is preserved.
+            </p>
+
+            <input id="file" type="file">
+
+            <p>
+                <button id="upload" class="btn">
+                    Upload &amp; Preserve
+                </button>
+            </p>
+
+            <div id="uploadMsg" class="muted"></div>
+
+        </div>
+
+        <div class="panel">
+
+            <h2>How monitoring works</h2>
+
+            <p class="muted">
+                FORENSIX checks only registered evidence
+                files in <code>storage/monitored</code>.
+
+                Modify a monitored copy in Windows or
+                upload a replacement to trigger an event.
+
+                Original files are never changed by the
+                comparison engine.
+            </p>
+
+            <input
+                id="replacementFile"
+                type="file"
+                class="hidden"
+            >
+
+        </div>
+
+    </section>
+
+    <!-- ======================================
+         EVIDENCE LIBRARY
+         ====================================== -->
+
+    <section class="panel">
+
+        <h2>Evidence Library</h2>
+
+        <div class="scroll">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Evidence</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="rows">
+
+                    <tr>
+                        <td colspan="4">
+                            Loading...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- ======================================
+         MONITORING EVENT HISTORY
+         ====================================== -->
+
+    <section class="panel">
+
+        <h2>Monitoring Event History</h2>
+
+        <div class="scroll">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Time (UTC)</th>
+                        <th>File</th>
+                        <th>Event</th>
+                        <th>Evidence ID</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="events">
+
+                    <tr>
+                        <td colspan="4">
+                            No events
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- ======================================
+         EXACT TEXT MODIFICATION ANALYSIS
+         ====================================== -->
+
+    <section class="panel hidden" id="comparison">
+
+        <h2>Exact Text Modification Analysis</h2>
+
+        <div id="comparisonBody"></div>
+
+    </section>
+
+    <!-- ======================================
+         EVIDENCE VIEWER
+         ====================================== -->
+
+    <section class="panel hidden" id="viewer">
+
+        <h2 id="viewerTitle">
+            Evidence Viewer
+        </h2>
+
+        <button id="original" class="btn secondary">
+            Original
+        </button>
+
+        <button id="monitored" class="btn secondary">
+            Monitored
+        </button>
+
+        <button id="closeViewer" class="btn secondary">
+            Close
+        </button>
+
+        <div id="viewerBody"></div>
+
+    </section>
+
+    <!-- ======================================
+         FOOTER
+         ====================================== -->
+
+    <p class="muted">
+        Monitoring is active only while the FORENSIX
+        server runs. PDF text comparison requires
+        Poppler pdftotext; scanned PDFs require OCR.
+        Word DOCX files are hash-monitored but do not
+        have text comparison in this version.
+    </p>
+
+</main>
+
+<script>
+
+// ==========================================
+// GLOBAL VARIABLES
+// ==========================================
+
+const $ = id => document.getElementById(id);
+
+let selected = null;
+let objectUrl = null;
+let refreshing = false;
+
+// ==========================================
+// SAFE HTML OUTPUT
+// ==========================================
+
+function safe(v) {
+
+    return String(v ?? '').replace(
+        /[&<>"']/g,
+        c => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[c])
+    );
+}
+
+// ==========================================
+// API COMMUNICATION
+// ==========================================
+
+async function api(url, options) {
+
+    const response = await fetch(url, options);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+
+        throw Error(
+            data.error || 'Request failed'
+        );
+    }
+
+    return data;
+}
+
+// ==========================================
+// STATUS BADGES
+// ==========================================
+
+function badge(s) {
+
+    return `
+        <span class="badge ${safe(s)}">
+            ${safe(String(s).toUpperCase())}
+        </span>
+    `;
+}
+
+// ==========================================
+// REFRESH DASHBOARD
+// ==========================================
+
+async function refresh() {
+
+    if (refreshing)
+        return;
+
+    refreshing = true;
+
+    try {
+
+        const [data, monitor, history] =
+            await Promise.all([
+
+                api('/api/evidence'),
+
+                api('/api/monitor/status'),
+
+                api('/api/monitor/events')
+
+            ]);
+
+        const items = data.items || [];
+
+        const ev = history.items || [];
+
+        // SERVER CONNECTION STATUS
+
+        $('server').textContent =
+            '● Server connected';
+
+        // DASHBOARD COUNTERS
+
+        $('total').textContent =
+            items.length;
+
+        $('tampered').textContent =
+            items.filter(
+                x => x.status === 'tampered'
+            ).length;
+
+        $('missing').textContent =
+            items.filter(
+                x => x.status === 'missing'
+            ).length;
+
+        $('eventCount').textContent =
+            monitor.event_count;
+
+        // MONITORING STATUS
+
+        $('monitorState').textContent =
+            monitor.enabled
+                ? '● MONITORING ACTIVE'
+                : '■ MONITORING PAUSED';
+
+        $('monitorState').className =
+            'badge' +
+            (monitor.enabled ? '' : ' tampered');
+
+        $('start').disabled =
+            monitor.enabled;
+
+        $('stop').disabled =
+            !monitor.enabled;
+
+        // EVIDENCE LIBRARY
+
+        $('rows').innerHTML = items.length
+
+            ? items.map(x => `
+
+                <tr>
+
+                    <td>
+                        <code>${safe(x.id)}</code>
+                    </td>
+
+                    <td>
+
+                        <b>${safe(x.name)}</b>
+
+                        <div class="muted">
+
+                            ${safe(x.created)}
+
+                            · ${Math.ceil(x.size / 1024)} KiB
+
+                        </div>
+
+                    </td>
+
+                    <td>
+
+                        ${badge(x.status)}
+
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="btn secondary"
+                            data-action="view"
+                            data-id="${safe(x.id)}"
+                        >
+                            View
+                        </button>
+
+                        <button
+                            class="btn secondary"
+                            data-action="replace"
+                            data-id="${safe(x.id)}"
+                        >
+                            Upload Modified
+                        </button>
+
+                        <button
+                            class="btn"
+                            data-action="compare"
+                            data-id="${safe(x.id)}"
+                        >
+                            Compare
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            `).join('')
+
+            : `
+
+                <tr>
+
+                    <td colspan="4">
+                        No evidence uploaded
+                    </td>
+
+                </tr>
+
+            `;
+
+        // MONITORING EVENT HISTORY
+
+        $('events').innerHTML = ev.length
+
+            ? ev.map(x => `
+
+                <tr>
+
+                    <td>
+                        ${safe(x.time)}
+                    </td>
+
+                    <td>
+                        ${safe(x.name)}
+                    </td>
+
+                    <td>
+                        ${badge(x.kind)}
+                    </td>
+
+                    <td>
+                        <code>${safe(x.id)}</code>
+                    </td>
+
+                </tr>
+
+            `).join('')
+
+            : `
+
+                <tr>
+
+                    <td colspan="4">
+                        No events yet
+                    </td>
+
+                </tr>
+
+            `;
+
+    } catch (e) {
+
+        $('server').textContent =
+            '● Server unavailable';
+
+        $('notice').textContent =
+            e.message;
+
+    } finally {
+
+        refreshing = false;
+
+    }
+}
+
+// ==========================================
+// MANUAL REFRESH BUTTON
+// ==========================================
+
+$('refresh').onclick = refresh;
+
+// ==========================================
+// START MONITORING
+// ==========================================
+
+$('start').onclick = async () => {
+
+    try {
+
+        await api(
+            '/api/monitor/start',
+            {
+                method: 'POST'
+            }
+        );
+
+        $('notice').textContent =
+            'Monitoring started. Current file states ' +
+            'are the new observation point; original ' +
+            'hashes remain unchanged.';
+
+        await refresh();
+
+    } catch (e) {
+
+        alert(e.message);
+
+    }
+};
+
+// ==========================================
+// STOP MONITORING
+// ==========================================
+
+$('stop').onclick = async () => {
+
+    try {
+
+        await api(
+            '/api/monitor/stop',
+            {
+                method: 'POST'
+            }
+        );
+
+        $('notice').textContent =
+            'Monitoring paused. File integrity ' +
+            'can still be checked manually.';
+
+        await refresh();
+
+    } catch (e) {
+
+        alert(e.message);
+
+    }
+};
+
+// ==========================================
+// UPLOAD ORIGINAL EVIDENCE
+// ==========================================
+
+$('upload').onclick = async () => {
+
+    const f = $('file').files[0];
+
+    if (!f)
+        return alert('Select a file');
+
+    if (f.size > 25 * 1024 * 1024)
+        return alert('Maximum 25 MB');
+
+    $('upload').disabled = true;
+
+    try {
+
+        const r = await api(
+            '/api/upload',
+            {
+                method: 'POST',
+
+                headers: {
+                    'X-Filename': f.name,
+                    'Content-Type':
+                        'application/octet-stream'
+                },
+
+                body: f
+            }
+        );
+
+        $('uploadMsg').textContent =
+            'Uploaded evidence ' + r.id;
+
+        await refresh();
+
+    } catch (e) {
+
+        $('uploadMsg').textContent =
+            e.message;
+
+    } finally {
+
+        $('upload').disabled = false;
+
+    }
+};
+
+// ==========================================
+// EVIDENCE ACTION BUTTONS
+// ==========================================
+
+$('rows').onclick = async e => {
+
+    const b = e.target.closest(
+        'button[data-action]'
+    );
+
+    if (!b)
+        return;
+
+    selected = b.dataset.id;
+
+    if (b.dataset.action === 'view') {
+
+        await showView('original');
+
+    } else if (b.dataset.action === 'replace') {
+
+        $('replacementFile').click();
+
+    } else {
+
+        await showCompare(selected);
+
+    }
+};
+
+// ==========================================
+// UPLOAD MODIFIED EVIDENCE
+// ==========================================
+
+$('replacementFile').onchange = async () => {
+
+    const f = $('replacementFile').files[0];
+
+    if (!f || !selected)
+        return;
+
+    if (!confirm(
+        'Replace the monitored copy only?'
+    )) {
+
+        $('replacementFile').value = '';
+
+        return;
+    }
+
+    try {
+
+        await api(
+
+            `/api/evidence/${encodeURIComponent(selected)}/replace`,
+
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type':
+                        'application/octet-stream'
+                },
+
+                body: f
+            }
+
+        );
+
+        await refresh();
+
+        await showCompare(selected);
+
+    } catch (e) {
+
+        alert(e.message);
+
+    } finally {
+
+        $('replacementFile').value = '';
+
+    }
+};
+
+// ==========================================
+// EXACT TEXT MODIFICATION COMPARISON
+// ==========================================
+
+async function showCompare(id) {
+
+    $('comparison').classList.remove('hidden');
+
+    const body = $('comparisonBody');
+
+    body.textContent =
+        'Extracting and comparing...';
+
+    $('comparison').scrollIntoView({
+        behavior: 'smooth'
+    });
+
+    try {
+
+        const r = await api(
+
+            `/api/evidence/${encodeURIComponent(id)}/compare`
+
+        );
+
+        let html = `
+
+            <div class="notice">
+
+                ${badge(
+                    r.tampered
+                        ? 'tampered'
+                        : 'verified'
+                )}
+
+                ${safe(r.message)}
+
+            </div>
+
+            <div class="muted">
+                Original SHA-256
+            </div>
+
+            <div class="hash">
+                ${safe(r.original_hash)}
+            </div>
+
+            <div class="muted">
+                Current SHA-256
+            </div>
+
+            <div class="hash">
+                ${safe(r.current_hash)}
+            </div>
+
+        `;
+
+        let count = 0;
+
+        for (const page of r.pages || []) {
+
+            if (page.warning) {
+
+                html += `
+
+                    <div class="notice">
+                        ${safe(page.warning)}
+                    </div>
+
+                `;
+            }
+
+            for (const d of page.changes || []) {
+
+                ++count;
+
+                html += `
+
+                    <div class="change">
+
+                        <div class="notice">
+
+                            Modification ${count}
+
+                            · ${safe(d.type)}
+
+                            · ${page.page === 0
+                                ? 'Entire document'
+                                : `Page ${safe(page.page)}`}
+
+                            · Old word ${safe(d.old_line)}
+
+                            / New word ${safe(d.new_line)}
+
+                        </div>
+
+                        <div class="pair">
+
+                            <div>
+
+                                <label>
+                                    ORIGINAL TEXT
+                                </label>
+
+                                <pre class="old">${safe(d.old_text) || '(none)'}</pre>
+
+                            </div>
+
+                            <div>
+
+                                <label>
+                                    MODIFIED TEXT
+                                </label>
+
+                                <pre class="new">${safe(d.new_text) || '(none)'}</pre>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                `;
+            }
+        }
+
+        html += `
+
+            <div class="notice">
+
+                ${count} changed text block(s) found.
+
+            </div>
+
+        `;
+
+        body.innerHTML = html;
+
+    } catch (e) {
+
+        body.textContent = e.message;
+
+    }
+}
+
+// ==========================================
+// EVIDENCE FILE VIEWER
+// ==========================================
+
+async function showView(version) {
+
+    if (!selected)
+        return;
+
+    $('viewer').classList.remove('hidden');
+
+    $('viewerTitle').textContent =
+        'Evidence Viewer — ' + version;
+
+    const body = $('viewerBody');
+
+    body.textContent = 'Loading...';
+
+    try {
+
+        const response = await fetch(
+
+            `/api/evidence/${encodeURIComponent(selected)}/view/${version}`
+
+        );
+
+        if (!response.ok) {
+
+            throw Error(
+                'Cannot view evidence'
+            );
+        }
+
+        const blob = await response.blob();
+
+        if (objectUrl) {
+
+            URL.revokeObjectURL(objectUrl);
+
+        }
+
+        objectUrl = URL.createObjectURL(blob);
+
+        // TEXT FILE PREVIEW
+
+        if (
+
+            blob.type.startsWith('text/') ||
+
+            blob.type === 'application/json'
+
+        ) {
+
+            const pre =
+                document.createElement('pre');
+
+            pre.textContent =
+                await blob.text();
+
+            body.replaceChildren(pre);
+
+        // PDF FILE PREVIEW
+
+        } else if (
+
+            blob.type === 'application/pdf'
+
+        ) {
+
+            const frame =
+                document.createElement('iframe');
+
+            frame.className = 'frame';
+
+            frame.src = objectUrl;
+
+            body.replaceChildren(frame);
+
+        // IMAGE FILE PREVIEW
+
+        } else if (
+
+            blob.type.startsWith('image/')
+
+        ) {
+
+            const img =
+                document.createElement('img');
+
+            img.src = objectUrl;
+
+            img.style.maxWidth = '100%';
+
+            body.replaceChildren(img);
+
+        // UNSUPPORTED FILE PREVIEW
+
+        } else {
+
+            body.textContent =
+                'Preview unavailable for this file type.';
+
+        }
+
+    } catch (e) {
+
+        body.textContent = e.message;
+
+    }
+
+    $('viewer').scrollIntoView({
+
+        behavior: 'smooth'
+
+    });
+}
+
+// ==========================================
+// VIEW ORIGINAL EVIDENCE
+// ==========================================
+
+$('original').onclick = () => {
+
+    showView('original');
+
+};
+
+// ==========================================
+// VIEW MONITORED EVIDENCE
+// ==========================================
+
+$('monitored').onclick = () => {
+
+    showView('monitored');
+
+};
+
+// ==========================================
+// CLOSE EVIDENCE VIEWER
+// ==========================================
+
+$('closeViewer').onclick = () => {
+
+    $('viewer').classList.add('hidden');
+
+    if (objectUrl) {
+
+        URL.revokeObjectURL(objectUrl);
+
+    }
+
+    objectUrl = null;
+};
+
+// ==========================================
+// INITIAL LOAD AND AUTOMATIC REFRESH
+// ==========================================
+
+refresh();
+
+setInterval(refresh, 3000);
+
+</script>
+
+</body>
+</html>
